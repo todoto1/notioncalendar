@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>투두투 계산기 위젯</title>
+<title>투두투 노션 캘린더 위젯</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard/dist/web/static/pretendard.css">
 <style>
   body {
@@ -11,174 +11,199 @@
     background: #FFFFFF;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: flex-start; /* ✅ 위쪽 정렬 */
     height: 100vh;
     margin: 0;
-    padding-top: 20px;
   }
-  #calculator-app {
-    width: 260px;
+  #calendar-app {
+    width: 300px;
     background: #F5F5F5;
-    padding: 20px;
+    padding: 20px 20px 25px 20px; /* ✅ 상단을 조금 줄이고 하단 여백 */
     border-radius: 20px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     text-align: center;
+    transition: background 0.3s ease;
+    margin-top: 0; /* ✅ 시작 위치 위로 */
   }
-  .display {
-    width: 100%;
-    height: 50px;
-    border: 2px solid #000CFE;
-    border-radius: 10px;
-    text-align: right;
-    font-size: 22px;
-    padding: 5px 10px;
-    margin-bottom: 15px;
-    color: #000CFE;
-    background: white;
-    box-sizing: border-box;
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px; /* ✅ 연·월과 요일 간 간격 */
   }
-  .buttons {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
+  .header span {
+    margin: 0 10px; /* ✅ <와 > 간격 */
   }
-  button {
-    height: 50px;
+  .month {
+    font-weight: bold;
     font-size: 18px;
-    border: none;
-    border-radius: 8px;
+  }
+  .color-selector {
+    background: rgba(255,255,255,0.3);
+    padding: 4px 6px;
+    border-radius: 12px;
+    display: flex;
+    gap: 6px;
+  }
+  .color-btn {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
     cursor: pointer;
-    background: white;
-    color: #000CFE;
-    border: 2px solid #000CFE;
-    transition: 0.2s ease;
-    touch-action: manipulation; /* ✅ 모바일 터치 대응 */
+    border: none;
   }
-  button:hover {
+  .calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(7, 1fr); /* ✅ 요일 1줄 + 날짜 6줄 고정 */
+    gap: 6px;
+    font-size: 15px;
+    height: 250px; /* ✅ 위젯 세로 고정 (너무 길지 않게) */
+  }
+  .day, .date {
+    text-align: center;
+    font-weight: 500;
+  }
+  .date {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+  }
+  .today {
     background: #000CFE;
     color: white;
-  }
-  .operator {
-    background: #E0E0E0;
-    color: #000CFE;
-  }
-  .operator:hover {
-    background: #d5d5d5;
-    color: #000CFE;
-  }
-  .equal {
-    background: #000CFE;
-    color: white;
-  }
-  .equal:hover {
-    background: #0009e6;
   }
 </style>
 </head>
 <body>
-<div id="calculator-app">
-  <input type="text" class="display" id="display" placeholder="0">
-  <div class="buttons">
-    <button class="operator" onclick="clearDisplay()">C</button>
-    <button class="operator" onclick="allClear()">AC</button>
-    <button class="operator" onclick="appendValue('%')">%</button>
-    <button class="operator" onclick="appendValue('/')">÷</button>
-
-    <button onclick="appendValue('7')">7</button>
-    <button onclick="appendValue('8')">8</button>
-    <button onclick="appendValue('9')">9</button>
-    <button class="operator" onclick="appendValue('*')">×</button>
-
-    <button onclick="appendValue('4')">4</button>
-    <button onclick="appendValue('5')">5</button>
-    <button onclick="appendValue('6')">6</button>
-    <button class="operator" onclick="appendValue('-')">−</button>
-
-    <button onclick="appendValue('1')">1</button>
-    <button onclick="appendValue('2')">2</button>
-    <button onclick="appendValue('3')">3</button>
-    <button class="operator" onclick="appendValue('+')">＋</button>
-
-    <button onclick="appendValue('0')">0</button>
-    <button onclick="appendValue('.')">.</button>
-    <button class="equal" style="grid-column: span 2;" onclick="calculate()">＝</button>
+<div id="calendar-app">
+  <div class="header">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="cursor:pointer" id="prevMonth"><</span>
+      <div class="month" id="monthDisplay">2025. 7</div>
+      <span style="cursor:pointer" id="nextMonth">></span>
+    </div>
+    <div class="color-selector">
+      <div class="color-btn" style="background:#000CFE" data-color="blue"></div>
+      <div class="color-btn" style="background:#000000" data-color="black"></div>
+      <div class="color-btn" style="background:#FFD700" data-color="yellow"></div>
+    </div>
   </div>
+  <div class="calendar" id="calendarDays"></div>
 </div>
 
 <script>
-const display = document.getElementById("display");
+let currentDate = new Date();
+let selectedColor = "blue";
 
-// ✅ 실시간 쉼표 포맷
-function formatInput(expression) {
-  return expression.replace(/\d+(\.\d+)?/g, (num) => {
-    if (num.includes(".")) {
-      const parts = num.split(".");
-      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-      return parts.join(".");
-    }
-    return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+function renderCalendar() {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  document.getElementById("monthDisplay").textContent = `${year}. ${month + 1}`;
+
+  const calendarDays = document.getElementById("calendarDays");
+  calendarDays.innerHTML = "";
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  days.forEach(day => {
+    const dayEl = document.createElement("div");
+    dayEl.classList.add("day");
+    dayEl.textContent = day;
+    calendarDays.appendChild(dayEl);
   });
+
+  for (let i = 0; i < firstDay; i++) {
+    calendarDays.appendChild(document.createElement("div"));
+  }
+
+  for (let date = 1; date <= lastDate; date++) {
+    const dateEl = document.createElement("div");
+    dateEl.classList.add("date");
+    dateEl.textContent = date;
+    if (date === today.getDate() && 
+        month === today.getMonth() && 
+        year === today.getFullYear()) {
+      dateEl.classList.add("today");
+    }
+    calendarDays.appendChild(dateEl);
+  }
+
+  const totalCells = 7 + firstDay + lastDate; 
+  const remaining = 49 - totalCells;
+  for (let i = 0; i < remaining; i++) {
+    calendarDays.appendChild(document.createElement("div"));
+  }
+
+  applyColorTheme();
 }
 
-function appendValue(value) {
-  let raw = display.dataset.raw || "";
-  raw += value;
-  display.dataset.raw = raw;
-  display.value = formatInput(raw);
-}
-
-function clearDisplay() {
-  let raw = display.dataset.raw || "";
-  raw = raw.slice(0, -1);
-  display.dataset.raw = raw;
-  display.value = formatInput(raw);
-}
-
-function allClear() {
-  display.dataset.raw = "";
-  display.value = "";
-}
-
-function formatNumber(num) {
-  if (isNaN(num)) return "Error";
-  const parts = num.toString().split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return parts.join(".");
-}
-
-function calculate() {
-  try {
-    const raw = (display.dataset.raw || "").replace(/%/g, "/100");
-    const result = eval(raw);
-    display.dataset.raw = result.toString();
-    display.value = formatNumber(result);
-  } catch {
-    display.value = "Error";
+function applyColorTheme() {
+  const app = document.getElementById("calendar-app");
+  const dates = document.querySelectorAll(".date");
+  const days = document.querySelectorAll(".day");
+  const monthTitle = document.getElementById("monthDisplay");
+  const todayEl = document.querySelector(".today");
+  
+  if (selectedColor === "blue") {
+    app.style.background = "#000CFE";
+    app.style.color = "#FFFFFF";
+    monthTitle.style.color = "#FFFFFF";
+    dates.forEach(d => { d.style.color = "#FFFFFF"; });
+    days.forEach(d => { d.style.color = "#FFFFFF"; });
+    if (todayEl) {
+      todayEl.style.background = "#FFFFFF";
+      todayEl.style.color = "#000CFE";
+    }
+  }
+  else if (selectedColor === "black") {
+    app.style.background = "#000000";
+    app.style.color = "#FFFFFF";
+    monthTitle.style.color = "#FFFFFF";
+    dates.forEach(d => { d.style.color = "#FFFFFF"; });
+    days.forEach(d => { d.style.color = "#FFFFFF"; });
+    if (todayEl) {
+      todayEl.style.background = "#FFFFFF";
+      todayEl.style.color = "#000000";
+    }
+  }
+  else if (selectedColor === "yellow") {
+    app.style.background = "#FFD700";
+    app.style.color = "#FFFFFF";
+    monthTitle.style.color = "#000000";
+    dates.forEach(d => { d.style.color = "#000000"; });
+    days.forEach(d => { d.style.color = "#000000"; });
+    if (todayEl) {
+      todayEl.style.background = "#000000";
+      todayEl.style.color = "#FFFFFF";
+    }
   }
 }
 
-// ✅ 직접 입력 시에도 실시간 쉼표 적용
-display.addEventListener("input", () => {
-  // 쉼표를 제거하고 raw 값으로 저장
-  let raw = display.value.replace(/,/g, "");
-  raw = raw.replace(/[^0-9+\-*/.%]/g, ""); // 숫자/연산자 외 제거
-  display.dataset.raw = raw;
-  display.value = formatInput(raw);
+document.getElementById("prevMonth").addEventListener("click", () => {
+  currentDate.setMonth(currentDate.getMonth() - 1);
+  renderCalendar();
+});
+document.getElementById("nextMonth").addEventListener("click", () => {
+  currentDate.setMonth(currentDate.getMonth() + 1);
+  renderCalendar();
 });
 
-// ✅ 키보드 입력 지원
-document.addEventListener("keydown", (e) => {
-  if ((/[0-9+\-*/.%]/).test(e.key)) {
-    appendValue(e.key);
-    e.preventDefault();
-  } else if (e.key === "Enter") {
-    calculate();
-    e.preventDefault();
-  } else if (e.key === "Backspace") {
-    clearDisplay();
-    e.preventDefault();
-  }
+document.querySelectorAll(".color-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    selectedColor = btn.dataset.color;
+    renderCalendar();
+  });
 });
+
+renderCalendar();
 </script>
 </body>
 </html>
