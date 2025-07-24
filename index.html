@@ -3,51 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>6주 고정 캘린더</title>
+<title>컬러 변경 캘린더</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard/dist/web/static/pretendard.css">
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden; /* ✅ 스크롤 제거 */
-  }
   body {
     font-family: 'Pretendard', sans-serif;
+    background: #FFFFFF;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #FFFFFF;
+    height: 100vh;
+    margin: 0;
   }
   #calendar-app {
-    width: 360px;
-    height: 460px; /* ✅ 6주 기준 고정 */
+    width: 300px;
     background: #F5F5F5;
     padding: 20px;
     border-radius: 20px;
     text-align: center;
     transition: background 0.3s ease;
-    box-sizing: border-box;
   }
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
   }
   .month {
     font-weight: bold;
-    font-size: 20px;
+    font-size: 18px;
   }
-  .color-box {
-    background: #E0E0E0;
-    padding: 4px 8px;
+  .color-selector {
+    background: rgba(255,255,255,0.3);
+    padding: 4px 6px;
     border-radius: 12px;
     display: flex;
     gap: 6px;
   }
   .color-btn {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     cursor: pointer;
     border: none;
@@ -55,8 +50,10 @@
   .calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-    font-size: 16px;
+    grid-template-rows: repeat(7, 1fr); /* 요일 1줄 + 날짜 6줄 고정 */
+    gap: 6px;
+    font-size: 15px;
+    height: 280px; /* 고정된 높이 */
   }
   .day, .date {
     text-align: center;
@@ -76,10 +73,12 @@
 <body>
 <div id="calendar-app">
   <div class="header">
-    <span style="cursor:pointer" id="prevMonth"><</span>
-    <div class="month" id="monthDisplay">2025. 7</div>
-    <span style="cursor:pointer" id="nextMonth">></span>
-    <div class="color-box">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="cursor:pointer" id="prevMonth"><</span>
+      <div class="month" id="monthDisplay">2025. 7</div>
+      <span style="cursor:pointer" id="nextMonth">></span>
+    </div>
+    <div class="color-selector">
       <div class="color-btn" style="background:#000CFE" data-color="blue"></div>
       <div class="color-btn" style="background:#000000" data-color="black"></div>
       <div class="color-btn" style="background:#FFD700" data-color="yellow"></div>
@@ -103,7 +102,7 @@ function renderCalendar() {
   const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month + 1, 0).getDate();
   const today = new Date();
-
+  
   const days = ["일", "월", "화", "수", "목", "금", "토"];
   days.forEach(day => {
     const dayEl = document.createElement("div");
@@ -112,25 +111,28 @@ function renderCalendar() {
     calendarDays.appendChild(dayEl);
   });
 
+  // 빈칸
   for (let i = 0; i < firstDay; i++) {
     calendarDays.appendChild(document.createElement("div"));
   }
 
+  // 날짜
   for (let date = 1; date <= lastDate; date++) {
     const dateEl = document.createElement("div");
     dateEl.classList.add("date");
     dateEl.textContent = date;
-
-    if (date === today.getDate() &&
-        month === today.getMonth() &&
+    if (date === today.getDate() && 
+        month === today.getMonth() && 
         year === today.getFullYear()) {
       dateEl.classList.add("today");
     }
     calendarDays.appendChild(dateEl);
   }
 
-  // ✅ 항상 42칸(6주) 유지
-  while (calendarDays.children.length < 49) { // 7요일 + 42칸 = 49
+  // 부족한 칸 채워서 6주 유지
+  const totalCells = 7 + firstDay + lastDate; 
+  const remaining = 49 - totalCells;
+  for (let i = 0; i < remaining; i++) {
     calendarDays.appendChild(document.createElement("div"));
   }
 
@@ -143,12 +145,13 @@ function applyColorTheme() {
   const days = document.querySelectorAll(".day");
   const monthTitle = document.getElementById("monthDisplay");
   const todayEl = document.querySelector(".today");
-
+  
   if (selectedColor === "blue") {
     app.style.background = "#000CFE";
+    app.style.color = "#FFFFFF";
     monthTitle.style.color = "#FFFFFF";
-    days.forEach(d => d.style.color = "#FFFFFF");
     dates.forEach(d => { d.style.color = "#FFFFFF"; });
+    days.forEach(d => { d.style.color = "#FFFFFF"; });
     if (todayEl) {
       todayEl.style.background = "#FFFFFF";
       todayEl.style.color = "#000CFE";
@@ -156,9 +159,10 @@ function applyColorTheme() {
   }
   else if (selectedColor === "black") {
     app.style.background = "#000000";
+    app.style.color = "#FFFFFF";
     monthTitle.style.color = "#FFFFFF";
-    days.forEach(d => d.style.color = "#FFFFFF");
     dates.forEach(d => { d.style.color = "#FFFFFF"; });
+    days.forEach(d => { d.style.color = "#FFFFFF"; });
     if (todayEl) {
       todayEl.style.background = "#FFFFFF";
       todayEl.style.color = "#000000";
@@ -166,9 +170,10 @@ function applyColorTheme() {
   }
   else if (selectedColor === "yellow") {
     app.style.background = "#FFD700";
+    app.style.color = "#FFFFFF";
     monthTitle.style.color = "#000000";
-    days.forEach(d => d.style.color = "#000000");
     dates.forEach(d => { d.style.color = "#000000"; });
+    days.forEach(d => { d.style.color = "#000000"; });
     if (todayEl) {
       todayEl.style.background = "#000000";
       todayEl.style.color = "#FFFFFF";
