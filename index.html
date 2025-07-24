@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>노션용 캘린더 위젯</title>
+<title>6주 고정 캘린더</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard/dist/web/static/pretendard.css">
 <style>
   html, body {
     margin: 0;
     padding: 0;
-    overflow: hidden; /* ✅ 스크롤 완전히 제거 */
+    overflow: hidden; /* ✅ 스크롤 제거 */
   }
   body {
     font-family: 'Pretendard', sans-serif;
@@ -20,7 +20,7 @@
   }
   #calendar-app {
     width: 360px;
-    height: 480px; /* ✅ 노션 스크롤 방지를 위해 고정 */
+    height: 460px; /* ✅ 6주 기준 고정 */
     background: #F5F5F5;
     padding: 20px;
     border-radius: 20px;
@@ -57,7 +57,6 @@
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
     font-size: 16px;
-    margin-top: 10px;
   }
   .day, .date {
     text-align: center;
@@ -77,11 +76,9 @@
 <body>
 <div id="calendar-app">
   <div class="header">
-    <div style="display:flex; align-items:center; gap:10px;">
-      <span style="cursor:pointer" id="prevMonth"><</span>
-      <div class="month" id="monthDisplay">2025. 7</div>
-      <span style="cursor:pointer" id="nextMonth">></span>
-    </div>
+    <span style="cursor:pointer" id="prevMonth"><</span>
+    <div class="month" id="monthDisplay">2025. 7</div>
+    <span style="cursor:pointer" id="nextMonth">></span>
     <div class="color-box">
       <div class="color-btn" style="background:#000CFE" data-color="blue"></div>
       <div class="color-btn" style="background:#000000" data-color="black"></div>
@@ -106,7 +103,7 @@ function renderCalendar() {
   const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month + 1, 0).getDate();
   const today = new Date();
-  
+
   const days = ["일", "월", "화", "수", "목", "금", "토"];
   days.forEach(day => {
     const dayEl = document.createElement("div");
@@ -124,18 +121,16 @@ function renderCalendar() {
     dateEl.classList.add("date");
     dateEl.textContent = date;
 
-    if (date === today.getDate() && 
-        month === today.getMonth() && 
+    if (date === today.getDate() &&
+        month === today.getMonth() &&
         year === today.getFullYear()) {
       dateEl.classList.add("today");
     }
     calendarDays.appendChild(dateEl);
   }
 
-  // ✅ 항상 6주(42칸)로 고정
-  const totalCells = calendarDays.children.length;
-  const requiredCells = 49; // 7일(요일) + 6주(42일)
-  while (calendarDays.children.length < requiredCells) {
+  // ✅ 항상 42칸(6주) 유지
+  while (calendarDays.children.length < 49) { // 7요일 + 42칸 = 49
     calendarDays.appendChild(document.createElement("div"));
   }
 
@@ -148,13 +143,12 @@ function applyColorTheme() {
   const days = document.querySelectorAll(".day");
   const monthTitle = document.getElementById("monthDisplay");
   const todayEl = document.querySelector(".today");
-  
+
   if (selectedColor === "blue") {
     app.style.background = "#000CFE";
-    app.style.color = "#FFFFFF";
     monthTitle.style.color = "#FFFFFF";
+    days.forEach(d => d.style.color = "#FFFFFF");
     dates.forEach(d => { d.style.color = "#FFFFFF"; });
-    days.forEach(d => { d.style.color = "#FFFFFF"; });
     if (todayEl) {
       todayEl.style.background = "#FFFFFF";
       todayEl.style.color = "#000CFE";
@@ -162,10 +156,9 @@ function applyColorTheme() {
   }
   else if (selectedColor === "black") {
     app.style.background = "#000000";
-    app.style.color = "#FFFFFF";
     monthTitle.style.color = "#FFFFFF";
+    days.forEach(d => d.style.color = "#FFFFFF");
     dates.forEach(d => { d.style.color = "#FFFFFF"; });
-    days.forEach(d => { d.style.color = "#FFFFFF"; });
     if (todayEl) {
       todayEl.style.background = "#FFFFFF";
       todayEl.style.color = "#000000";
@@ -173,10 +166,9 @@ function applyColorTheme() {
   }
   else if (selectedColor === "yellow") {
     app.style.background = "#FFD700";
-    app.style.color = "#FFFFFF";
     monthTitle.style.color = "#000000";
+    days.forEach(d => d.style.color = "#000000");
     dates.forEach(d => { d.style.color = "#000000"; });
-    days.forEach(d => { d.style.color = "#000000"; });
     if (todayEl) {
       todayEl.style.background = "#000000";
       todayEl.style.color = "#FFFFFF";
