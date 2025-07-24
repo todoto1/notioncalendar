@@ -11,27 +11,28 @@
     background: #FFFFFF;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* ✅ 위쪽 정렬 */
     height: 100vh;
     margin: 0;
   }
   #calendar-app {
     width: 300px;
     background: #F5F5F5;
-    padding: 20px;
+    padding: 20px 20px 25px 20px; /* ✅ 상단을 조금 줄이고 하단 여백 */
     border-radius: 20px;
     text-align: center;
     transition: background 0.3s ease;
+    margin-top: 0; /* ✅ 시작 위치 위로 */
   }
   .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px; /* 연·월과 요일 간격 */
-}
-.header span {
-  margin: 0 8px; /* <와 > 간격 */
-}
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px; /* ✅ 연·월과 요일 간 간격 */
+  }
+  .header span {
+    margin: 0 10px; /* ✅ <와 > 간격 */
+  }
   .month {
     font-weight: bold;
     font-size: 18px;
@@ -53,25 +54,29 @@
   .calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: repeat(7, 1fr); /* 요일 1줄 + 날짜 6줄 고정 */
+    grid-template-rows: repeat(7, 1fr); /* ✅ 요일 1줄 + 날짜 6줄 고정 */
     gap: 6px;
     font-size: 15px;
-    height: 280px; /* 고정된 높이 */
+    height: 250px; /* ✅ 위젯 세로 고정 (너무 길지 않게) */
   }
-.date {
-  width: 36px;        /* 정사각형 */
-  height: 36px;
-  border-radius: 50%;
-  display: flex;      /* 텍스트 중앙 정렬 */
-  justify-content: center;
-  align-items: center;
-  margin: 0 auto;     /* 가운데 정렬 */
-  transition: all 0.3s ease;
-}
-.today {
-  background: #000CFE;
-  color: white;
-}
+  .day, .date {
+    text-align: center;
+    font-weight: 500;
+  }
+  .date {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+  }
+  .today {
+    background: #000CFE;
+    color: white;
+  }
 </style>
 </head>
 <body>
@@ -115,12 +120,10 @@ function renderCalendar() {
     calendarDays.appendChild(dayEl);
   });
 
-  // 빈칸
   for (let i = 0; i < firstDay; i++) {
     calendarDays.appendChild(document.createElement("div"));
   }
 
-  // 날짜
   for (let date = 1; date <= lastDate; date++) {
     const dateEl = document.createElement("div");
     dateEl.classList.add("date");
@@ -133,7 +136,6 @@ function renderCalendar() {
     calendarDays.appendChild(dateEl);
   }
 
-  // 부족한 칸 채워서 6주 유지
   const totalCells = 7 + firstDay + lastDate; 
   const remaining = 49 - totalCells;
   for (let i = 0; i < remaining; i++) {
